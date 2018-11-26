@@ -3,6 +3,7 @@ import { Mutation } from "react-apollo";
 import gql from "graphql-tag";
 import Router from "next/router";
 import Form from "./styles/Form";
+import formatMoney from "../lib/formatMoney";
 import Error from "./ErrorMessage";
 
 const CREATE_ITEM_MUTATION = gql`
@@ -27,11 +28,11 @@ const CREATE_ITEM_MUTATION = gql`
 
 class CreateItem extends Component {
   state = {
-    title: "Cool Shoes",
-    description: "I love those shoes",
-    image: "dog.jpg",
-    largeImage: "large-dog.jpg",
-    price: 1000
+    title: "",
+    description: "",
+    image: "",
+    largeImage: "",
+    price: 0
   };
   handleChange = e => {
     const { name, type, value } = e.target;
@@ -40,21 +41,19 @@ class CreateItem extends Component {
   };
 
   uploadFile = async e => {
-    console.log("uploading file...");
     const files = e.target.files;
     const data = new FormData();
     data.append("file", files[0]);
     data.append("upload_preset", "sickfits");
 
     const res = await fetch(
-      "https://api.cloudinary.com/v1_1/dbomlirl6/image/upload",
+      "https://api.cloudinary.com/v1_1/wesbostutorial/image/upload",
       {
         method: "POST",
         body: data
       }
     );
     const file = await res.json();
-    console.log(file);
     this.setState({
       image: file.secure_url,
       largeImage: file.eager[0].secure_url
@@ -65,10 +64,10 @@ class CreateItem extends Component {
       <Mutation mutation={CREATE_ITEM_MUTATION} variables={this.state}>
         {(createItem, { loading, error }) => (
           <Form
+            data-test="form"
             onSubmit={async e => {
               e.preventDefault();
               const res = await createItem();
-              console.log(res);
               Router.push({
                 pathname: "/item",
                 query: { id: res.data.createItem.id }
