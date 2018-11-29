@@ -57,7 +57,7 @@ describe("<Nav/>", () => {
     await wait();
     wrapper.update();
     const nav = wrapper.find('ul[data-test="nav"]');
-    expect(nav.children().length).toBe(6);
+    expect(nav.children().length).toBe(5);
     expect(nav.text()).toContain("Sign Out");
   });
 

@@ -1,6 +1,6 @@
-import { Query } from 'react-apollo';
-import { CURRENT_USER_QUERY } from './User';
-import Signin from './Signin';
+import { Query } from "react-apollo";
+import { CURRENT_USER_QUERY } from "./User";
+import Signin from "./Signin";
 
 const PleaseSignIn = props => (
   <Query query={CURRENT_USER_QUERY}>
@@ -14,7 +14,11 @@ const PleaseSignIn = props => (
           </div>
         );
       }
-      return props.children;
+      //pass login user detail to each children
+      //so we dont require to query it in each component
+      return React.Children.map(props.children, child =>
+        React.cloneElement(child, { me: data.me })
+      );
     }}
   </Query>
 );

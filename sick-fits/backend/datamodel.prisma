@@ -54,4 +54,19 @@ type Order {
   charge: String!
   createdAt: DateTime!
   updatedAt: DateTime!
+  netTotal: Int
+  offer: Offer
+}
+
+type Offer {
+  id: ID! @unique
+  discount: Int!
+  code: String! @unique
+  title: String!
+  description: String
+  availCount: Int! @default(value: 1)
+  availOn: DateTime!
+  expireOn: DateTime!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }

@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const { randomBytes } = require("crypto");
 const { promisify } = require("util");
 const { transport, makeANiceEmail } = require("../mail");
-const { hasPermission } = require("../utils");
+const { hasPermission, sendOfferEmails } = require("../utils");
 const stripe = require("../stripe");
 
 const Mutations = {
@@ -282,6 +282,65 @@ const Mutations = {
       }
     });
     return order;
+  },
+  async createOffer(parent, args, ctx, info) {
+    let { userId } = ctx.request;
+    if (!userId) {
+      throw new Error("Please login to access this feature!");
+    }
+    const offer = await ctx.db.mutation.createOffer(
+      {
+        data: {
+          ...args
+        }
+      },
+      info
+    );
+
+    const users = await ctx.db.query.users(
+      {
+        where: {
+          id_not: userId
+        }
+      },
+      `{
+        email
+      }`
+    );
+
+    let emails = users.map(user => user.email);
+    sendOfferEmails(emails, args);
+
+    return offer;
+  },
+  async validateOfferCode(parent, args, ctx, info) {
+    let { userId } = ctx.request;
+    if (!userId) throw new Error("Please login to access this feature!");
+    let { code } = args;
+    if (!code) throw new Error("Please provide code!");
+    let offer = await ctx.db.query.offer(
+      {
+        where: {
+          code: code
+        }
+      },
+      {
+        id,
+        expireOn,
+        availCount
+      }
+    );
+    if (!offer) {
+      return {
+        valid: false,
+        message: "Invalid Code"
+      };
+    } else {
+      return {
+        valid: true,
+        message: ""
+      };
+    }
   }
 };
 
